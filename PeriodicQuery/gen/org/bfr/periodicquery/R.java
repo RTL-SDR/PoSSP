@@ -481,12 +481,11 @@ containing a value of this type.
         public static final int powered_by_google_light=0x7f020025;
     }
     public static final class id {
-        public static final int action_settings=0x7f070029;
+        public static final int action_settings=0x7f07001b;
         public static final int adjust_height=0x7f070001;
         public static final int adjust_width=0x7f070002;
         public static final int book_now=0x7f070012;
         public static final int button_start=0x7f07001a;
-        public static final int button_stop=0x7f07001b;
         public static final int buyButton=0x7f07000e;
         public static final int buy_now=0x7f070013;
         public static final int buy_with_google=0x7f070014;
@@ -502,19 +501,6 @@ containing a value of this type.
         public static final int none=0x7f070003;
         public static final int normal=0x7f070005;
         public static final int production=0x7f07000a;
-        public static final int radio_10s=0x7f070020;
-        public static final int radio_1m=0x7f070022;
-        public static final int radio_2m=0x7f070023;
-        public static final int radio_30s=0x7f070021;
-        public static final int radio_5m=0x7f070024;
-        public static final int radio_fuzz1=0x7f070028;
-        public static final int radio_google=0x7f07001c;
-        public static final int radio_microsoft=0x7f07001d;
-        public static final int radio_nofuzz=0x7f070027;
-        public static final int radio_ny=0x7f070025;
-        public static final int radio_ohio=0x7f070026;
-        public static final int radio_spectrumbridge=0x7f07001e;
-        public static final int rtl_sdr=0x7f07001f;
         public static final int sandbox=0x7f07000b;
         public static final int satellite=0x7f070006;
         public static final int selectionDetails=0x7f07000f;
@@ -535,6 +521,7 @@ containing a value of this type.
     }
     public static final class raw {
         public static final int gtm_analytics=0x7f040000;
+        public static final int tone=0x7f040001;
     }
     public static final class string {
         public static final int accept=0x7f060002;

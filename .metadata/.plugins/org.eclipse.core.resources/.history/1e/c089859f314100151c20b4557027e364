@@ -1,0 +1,70 @@
+/**
+	Copyright 2014 [BFR]
+
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+
+	    http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+ **/
+package org.bfr.periodicquery;
+
+import java.util.Calendar;
+
+import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+
+public class StartStopActivity extends Activity
+{
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState)
+	{
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_start_stop);
+		
+		//Remove a pending Intent if any
+		Intent i = new Intent(this, MyReceiver.class);
+		PendingIntent pi = PendingIntent.getBroadcast(this,0, i, 0);
+		AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		am.cancel(pi);
+	}
+
+	public void onStart(View view)
+	{
+		
+		
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.SECOND, 5);
+		
+		Intent i = new Intent(this, MyReceiver.class);
+		PendingIntent pi = PendingIntent.getBroadcast(this,0, i, 0);
+		
+		AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+		am.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 1*15*1000 ,  pi); // every 30 seconds
+		
+	}
+	@Override
+	protected void onDestroy() {
+		//Remove a pending Intent if any
+		Intent i = new Intent(this, MyReceiver.class);
+		PendingIntent pi = PendingIntent.getBroadcast(this,0, i, 0);
+		AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		am.cancel(pi);
+		super.onDestroy();
+	}
+}

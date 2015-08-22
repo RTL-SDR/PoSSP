@@ -17,7 +17,7 @@ import java.net.URL;
 public class UploadToServer extends IntentService {
 
     int serverResponseCode = 0;
-    String upLoadServerUri = "http://alehsan.nl/m/server/index.php";
+    String upLoadServerUri = "http://eliahshop.com/server/index.php";
     
     /**********  File Path *************/
     final String uploadFilePath = "/mnt/sdcard/";
@@ -29,12 +29,15 @@ public class UploadToServer extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+    	new Thread(){
+    		public void run(){
         uploadFile(uploadFilePath+uploadFileName);
         Log.d("UploadToServer", "Service has been started");
+    		}
+    	}.start();
     }
 
     public int uploadFile(String sourceFileUri) {
-
 
     	  String fileName = uploadFilePath+uploadFileName;
  
@@ -130,12 +133,8 @@ public class UploadToServer extends IntentService {
          }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-    @Override
     public void onDestroy() {
-        Toast.makeText(getBaseContext() , "UploadToService is Destroyed "  , Toast.LENGTH_SHORT).show();
+    //    Toast.makeText(getBaseContext() , "UploadToService is Destroyed "  , Toast.LENGTH_SHORT).show();
     	super.onDestroy();
     }
 }

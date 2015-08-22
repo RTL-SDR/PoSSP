@@ -17,8 +17,6 @@ package org.bfr.querytools;
 
 import java.io.IOException;
 
-import org.bfr.querytools.spectrumbridge.SpectrumBridgeQuery;
-
 
 public class Main
 {
@@ -29,10 +27,6 @@ public class Main
 		System.setProperty("org.apache.commons.logging.simplelog.showdatetime","true");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "DEBUG");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "ERROR");
-		
-//		GoogleSpectrumQuery.query(40.69940, -74.04056);
-//		MsrSpectrumQuery.query(40.69940, -74.04056);
-		SpectrumBridgeQuery.query(40.69940, -74.04056, true);
 		
 	}
 

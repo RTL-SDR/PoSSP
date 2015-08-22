@@ -1,61 +1,48 @@
 /**
 	Copyright 2014 [BFR]
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 	    http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	See the License for the specific language governing permissions and
 	limitations under the License.
-**/
+ **/
 package org.bfr.periodicquery;
 
-import java.util.GregorianCalendar;
-
-import org.bfr.periodicquery.PeriodicQueryApplication.LocationFuzzing;
-import org.bfr.periodicquery.PeriodicQueryApplication.SpectrumSource;
 import org.bfr.periodicquery.sdr.LocationService;
 import org.bfr.periodicquery.sdr.SdrSpectrumSensing;
 import org.bfr.periodicquery.sdr.UploadService;
-import org.bfr.querytools.google.GoogleSpectrumQuery;
 import org.bfr.querytools.logging.Logger;
-import org.bfr.querytools.msr.MsrSpectrumQuery;
-import org.bfr.querytools.spectrumbridge.SpectrumBridgeQuery;
 
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
 import android.util.Log;
+import android.widget.Toast;
 
 public class PeriodicQueryService extends Service
 {
-	
-	// Maximum time to keep a wake lock in ms 
-	private static long wakeLockTimeOut = 10*1000;
-	
-	// Binder so Activities can bind this service.
-	private final PeriodicQueryServiceBinder binder = new PeriodicQueryServiceBinder(this);
+	private MediaPlayer tonePlayer;
 
-	// Active
-	boolean active = false;
-	
-	// First query of a sequence? Needed for spectrum bridge
-	boolean firstQuery = false;
-	
-	public PeriodicQueryService()
+
+	@Override
+	public void onCreate()
 	{
+
+		Intent iLoc = new Intent(getBaseContext(), LocationService.class);
+		startService(iLoc);
+
+		tonePlayer = MediaPlayer.create(this,R.raw.tone); 
+		tonePlayer.start();
+
 		java.util.logging.Logger.getLogger("org.apache.http.wire").setLevel(java.util.logging.Level.FINEST);
 		java.util.logging.Logger.getLogger("org.apache.http.headers").setLevel(java.util.logging.Level.FINEST);
 
@@ -64,7 +51,7 @@ public class PeriodicQueryService extends Service
 		System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "debug");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.headers", "debug");
-		
+
 		Logger.setLogger(new Logger() {
 
 			@Override
@@ -72,177 +59,53 @@ public class PeriodicQueryService extends Service
 			{
 				Log.d("SpectrumQuery", message);
 			}
-			
+
 		});
-	}
 
-	public void start()
-	{
-		if (active)
-			return;
-		
-		// Start polling
-		AlarmReceiver.scheduleWakeupFromNow(this, 0);
-
-		// Signal that we're now active
-		active = true;
-		
-		// First query after new start
-		firstQuery = true;
-	}
-
-	public void stop()
-	{
-		if (!active)
-			return;
-		
-		// Signal that we're now deactivated
-		active = false;
-	}
-
-	public boolean isActive()
-	{
-		return active;
-	}
-
-	@Override
-	public void onCreate()
-	{
 		super.onCreate();
-
-		AlarmReceiver.setCallBack(pollingCallback);
 	}
 
+	public int onStartCommand(Intent intent, int flags, int startId) {
+	
+		new Handler().postDelayed(new Runnable() {
+		    @Override
+		    public void run() {
+		    	SdrSpectrumSensing.sense();
+		    	Toast.makeText(getBaseContext() , "I'm sensing  .... "  , Toast.LENGTH_SHORT).show();
+		    }
+		},1000);
+		
+		new Handler().postDelayed(new Runnable() {
+		    @Override
+		    public void run() {
+		    	tonePlayer.stop();
+		    	
+		    	Intent uploadIntent = new Intent(getBaseContext(), UploadService.class);
+				startService(uploadIntent);
+
+				Intent iLoc = new Intent(getBaseContext(), LocationService.class);
+				stopService(iLoc);
+				
+				stopSelf();
+		    }
+		},5000);
+		
+		return super.onStartCommand(intent, flags, startId);
+	}
 	@Override
 	public void onDestroy()
 	{
+	//	Toast.makeText(getBaseContext() , "PeriodicQueryService is Destroyed "  , Toast.LENGTH_SHORT).show();
 		super.onDestroy();
 	}
 
-
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId)
-	{
-		
-		// The intent to launch when the user clicks the expanded notification
-		Intent launchIntent = new Intent(this, StartStopActivity.class);
-		launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		PendingIntent pendIntent = PendingIntent.getActivity(this, 0, launchIntent, 0);
-
-		// This constructor is deprecated. Use Notification.Builder instead
-		Notification notice = new Notification(R.drawable.ic_launcher, "Periodic Query", System.currentTimeMillis());
-
-		// This method is deprecated. Use Notification.Builder instead.
-		notice.setLatestEventInfo(this, "Periodic Query", "Periodic Query", pendIntent);
-		notice.flags |= Notification.FLAG_NO_CLEAR;
-
-		startForeground(1234, notice);
-
-		return START_STICKY;
+	public IBinder onBind(Intent intent) {
+		return null;
 	}
 
-	@Override
-	public IBinder onBind(Intent intent)
-	{
-		return binder;
-	}
 
-	Runnable pollingCallback = new Runnable()
-	{
-		
-		public void spectrumQuery(PeriodicQueryApplication app)
-		{
-			// Determine location
-			double latitude = app.getLocation().latitude;
-			double longitude = app.getLocation().longitude;
-			
-			// Optionally apply fuzzing
-			if (app.getLocationFuzzing()==LocationFuzzing.UniformSquare)
-			{
-				latitude += Math.random() - 0.5;
-				longitude += Math.random() - 0.5;
-			}
-			
-			// Execute the query
-			switch(app.getSpectrumSource())
-			{
-			case Google:
-				GoogleSpectrumQuery.query(latitude, longitude);
-				break;
-			case Microsoft:
-				MsrSpectrumQuery.query(latitude, longitude);
-				break;
-			case SpectrumBridge:
-				SpectrumBridgeQuery.query(latitude, longitude, firstQuery);
-				break;
-			default:
-				// none
-			}
-			
-			firstQuery = false;
-		}
-		
-		public void spectrumSense()
-		{
-			
-			SdrSpectrumSensing.sense();			
-			
-			// After start sensing start the upload process in 25 sec
-			Long time = new GregorianCalendar().getTimeInMillis()+25*1000;
-			
-			Intent uploadIntent = new Intent(getBaseContext(), UploadService.class);
-			AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-			am.set(AlarmManager.RTC_WAKEUP, time, PendingIntent.getService(getBaseContext(), 1, uploadIntent, PendingIntent.FLAG_UPDATE_CURRENT));
-			
-			
-		}
-		
-		@Override
-		public void run()
-		{
-			final PeriodicQueryApplication app = (PeriodicQueryApplication)getApplication();
-			
-			// Schedule next wakeup
-			Log.d("SpectrumQuery", "active: " + active);
-			
-			if (active)
-				AlarmReceiver.scheduleWakeupFromNow(PeriodicQueryService.this, app.getQueryInterval() * 1000);
-			
-			// Get the power manager
-			PowerManager powerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
-			
-			// Create and acquire a wake lock to keep the processor wake
-			final WakeLock lock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Spectrum Query");
-			lock.acquire(wakeLockTimeOut);
-			
-			new Thread() 
-			{
-				
-				public void run()
-				{
-					try
-					{
-						
-						if (app.getSpectrumSource()==SpectrumSource.RtlSdr)
-							spectrumSense();
-						else
-							spectrumQuery(app);
-				
-					} catch (Exception ex)
-					{
-						ex.printStackTrace();						
-					} finally
-					{
-						if (lock.isHeld())
-							lock.release();
-					}
-				};
-				
-			}.start();
-			
-		}
 
-	};
-	
+
 }
 

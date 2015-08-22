@@ -23,8 +23,8 @@ GoogleApiClient.ConnectionCallbacks,
 GoogleApiClient.OnConnectionFailedListener,
 LocationListener {
 
-	public static final int LOCATION_REQUEST_INTERVAL = 2000;
-	public static final int FASTEST_LOCATION_INTERVAL = 100;
+	public static final int LOCATION_REQUEST_INTERVAL = 3000;
+	public static final int FASTEST_LOCATION_INTERVAL = 1000;
 	private GoogleApiClient gac;
 	private LocationRequest lr;
 	private Location location;
@@ -42,7 +42,6 @@ LocationListener {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId){
-
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -50,22 +49,21 @@ LocationListener {
 	public void onDestroy() {
 		stopIt();
 		//    LocThread.interrupt();
-		Toast.makeText(getBaseContext() , "LocationService is Destroyed "  , Toast.LENGTH_SHORT).show();
+	//	Toast.makeText(getBaseContext() , "LocationService is Destroyed "  , Toast.LENGTH_SHORT).show();
 		super.onDestroy();
 
 	}
-
-	@Override
-	public IBinder onBind(Intent intent) {
-		return null;
-	}
-
-
 
 	public void stopIt(){
 		lDSource.close();
 		LocationServices.FusedLocationApi.removeLocationUpdates(gac, this);
 	}
+	
+	@Override
+	public IBinder onBind(Intent intent) {
+		return null;
+	}
+
 
 	public void LocationTrack(){
 

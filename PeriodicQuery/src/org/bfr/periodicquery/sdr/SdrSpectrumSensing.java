@@ -34,6 +34,9 @@ public class SdrSpectrumSensing
 
 	private static Command command;
 	private static Shell rootShell;
+	public static int upBand = 470;
+	public static int bin = 0;
+//	public static int count = 1;
 
 	public static void sense()
 	{
@@ -45,7 +48,13 @@ public class SdrSpectrumSensing
 			rootShell = Shell.startNewRootShell(30000, 3);
 			
 			// Clear logcat buffer
-			command = new Command(1,  "/data/local/tmp/rtl_power -f 740M:890M:1M -1   /sdcard/airband.txt" )
+	//		count++;
+		//	if(count % 20 == 0 )
+		upBand = upBand + 1;
+		bin = bin + 10;
+			
+		//	command = new Command(1,  "/data/local/tmp/rtl_power -f 470M:"+upBand+"M:1M -1 -i0 /sdcard/airband.txt" )
+		command = new Command(1,  "/data/local/tmp/rtl_power -f 470M:510M:"+bin+"k -1 -i0 /sdcard/airband.txt" )
 		//	command = new Command(1, "rtl_power -N -1 -i 0")
 			{
 

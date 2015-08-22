@@ -69,7 +69,7 @@ public class UploadService extends IntentService {
 
     @Override
     public void onDestroy() {
-        Toast.makeText(getBaseContext() , "UploadService is Destroyed "  , Toast.LENGTH_SHORT).show();
+    //    Toast.makeText(getBaseContext() , "UploadService is Destroyed "  , Toast.LENGTH_SHORT).show();
         super.onDestroy();
     }
 }

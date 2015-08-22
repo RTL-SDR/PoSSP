@@ -7,11 +7,7 @@
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="21" />
-
-    <!-- Power -->
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-	<uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
-	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+	
 	
     <!-- File IO -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -32,13 +28,13 @@
     <!-- Audio recording -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
-        android:name="org.bfr.periodicquery.PeriodicQueryApplication"
         >
         <activity
             android:name="org.bfr.periodicquery.StartStopActivity"
@@ -48,9 +44,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name="org.bfr.periodicquery.AlarmReceiver"/>
-        <receiver android:name="org.bfr.periodicquery.UploadReceiver"/>
-        <service android:name="org.bfr.periodicquery.PeriodicQueryService"/>
+        <service android:name="org.bfr.periodicquery.PeriodicQueryService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.bfr.periodicquery.PeriodicQueryService" />
+           </intent-filter>
+            
+        </service>
         
         <service android:name="org.bfr.periodicquery.sdr.LocationService" 
             android:enabled="true"
@@ -59,6 +60,7 @@
                 <action android:name="org.bfr.periodicquery.sdr.LocationService" />
            </intent-filter>
          </service>
+         
         <service android:name="org.bfr.periodicquery.sdr.UploadService" 
             android:enabled="true"
             android:exported="true">
@@ -66,6 +68,8 @@
                 <action android:name="org.bfr.periodicquery.sdr.uploadservice" />
            </intent-filter>
         </service>
+        <receiver android:name=".MyReceiver"></receiver>
+        
         <service android:name="org.bfr.periodicquery.sdr.UploadToServer"  
             android:enabled="true"
             android:exported="true"
